@@ -1,0 +1,1 @@
+var _maintenanceWarning={enabled:false,warningStart:new Date("September 28, 2016 13:00:00"),warningEnd:new Date("November 16, 2016 00:00:00"),maintenanceStart:new Date("October 15, 2016 19:00:00"),maintenanceEnd:new Date("October 16, 2016 02:00:00"),timezoneAbbr:"ET",dateFormat:"MM d, yy",is24HourFormat:false};

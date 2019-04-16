@@ -1,0 +1,134 @@
+function getOutputTemplate(){return(typeof(outputTemplate)!="undefined"?outputTemplate:"");}
+function getOutputTemplateQuery(){return(typeof(outputTemplate)!="undefined"?"outputTemplate="+outputTemplate+"&":"");}
+var saveDocumentServiceLocation;if(saveDocumentServiceLocation==undefined)saveDocumentServiceLocation="/contracts/SaveDoc/index.aspx";function getHtmlDocLocation(){if(!useDisplayHTML())return"preview.aspx";return"displayhtml.aspx";}
+function useDisplayHTML(){return!(typeof(dcsVersion)=="undefined");}
+function myDocuments()
+{return showDialog("My Documents","/MyDocuments/index.aspx?view=loadPreview&code="+PC,500,339,'plainDialog newmydocumentDialog',0.7);}
+var saveAnswersHref='';function saveAnswers()
+{postTo("/contracts/SaveAnswers.php",{'contract':PU,'variablestring':VS,'dbcountry':dbcountry,'dbregion':dbregion});}
+var saveDocument_Callback=null;function saveDocument(format,filename,callback)
+{if(callback)
+saveDocument_Callback=callback;if(format=='html')
+saveAsHTML(filename);if(format=='doc')
+saveAsWord(filename);if(format=='pdf')
+saveAsPDF(filename);if(format=='rtf')
+saveAsRTF(filename);}
+var _save_filename='';var _is_download=false;var _download_save_doc=true;function getExtraQString(){var extraQString="";if(getQueryStringValue("code")){extraQString+="&code="+getQueryStringValue("code");}
+if(getQueryStringValue("file")){extraQString+="&file="+getQueryStringValue("file");}
+return extraQString;}
+function saveAsHTML(filename,htmlCallback,isDownload){if(_restrictTrialFeatures){openRestrictedFeaturesDialog('HTML');return false;}
+_is_download=typeof isDownload=="undefined"?false:isDownload;if(!filename||_is_download)
+trackEvent('Download as HTML');else
+trackEvent('Save as HTML');if(typeof getCookieValue=="function"&&(getCookieValue('UID')==null||getCookieValue('UID')==""))
+{showSignInDialog('signin',false,true,window.top.location.href,false,true);return;}
+_save_filename=filename;if(!_save_filename||_is_download)
+showMessage('Please Wait');if((!_save_filename||_is_download)&&(cssua.ua.ios||(cssua.ua.safari&&cssua.ua.mac_os_x)))
+newWinForDownloadIOS=window.open("","formvalueHtml");if(typeof(dcsVersion)=="undefined"||(typeof(usingLDEditor)!="undefined"&&usingLDEditor))saveAsHTMLFinal(getObject('outputPage').innerHTML,htmlCallback);else{httpRequest('',getHtmlDocLocation()+"?loc="+dbcountry+getExtraQString(),getObject("content"),"Saving Document as HTML...",function(req,ind,suc){saveAsHTMLCallback(req,ind,suc,htmlCallback);},true);}}
+function saveAsHTMLCallback(req,ind,suc,callback){hideMessage();if(ind&&ind.parentNode)ind.parentNode.removeChild(ind);if(suc){var html=outputOnly(req.responseText);if(html){saveAsHTMLFinal(html,callback);}
+else
+alert("Could not retrieve document.");}
+else
+alert("There was a problem saving your document ("+req.status+": "+req.statusText+")");}
+function saveAsHTMLFinal(htmlFull,htmlCallback){hideMessage();var prodTech="";if(typeof htmlCallback=="undefined"&&(typeof usingLDEditor=="undefined"||!usingLDEditor))
+htmlCallback=displaySuccess;else if(typeof htmlCallback=="undefined"&&typeof usingLDEditor!="undefined"&&usingLDEditor)
+htmlCallback=saveAsHTMLCompleteEditor;var contractType="";if(typeof productTechnology!="undefined"&&productTechnology.length>0){if(productTechnology.indexOf("DCS")!=-1||productTechnology.indexOf("yudox")!=-1)
+contractType="&type=aspnet";prodTech="&technology="+productTechnology;}
+var html=replaceCopyright(htmlFull)
+var countryCode=getCountry();var regionCode=getRegion();var criteria=getCriteria();if(html){if(!_save_filename||_is_download)
+{var download_file_name=_save_filename;if(!_is_download){download_file_name="";}
+var url=saveDocumentServiceLocation+"?download=true"+contractType;var data={"filename":download_file_name,'outputTemplate':getOutputTemplate(),'contract':PU,'html':encodeURI(html),'format':'html','productCode':PC,'countryCode':countryCode,'regionCode':regionCode,'criteria':criteria,'additionalPrintCSS':(typeof(additionalPrintCSS)!="undefined"?escape(additionalPrintCSS):"")};if(cssua.ua.ios||(cssua.ua.safari&&cssua.ua.mac_os_x)){postToTarget(url,'formvalueHtml',data);}
+else
+postTo(url,data);}
+else{httpRequest(getOutputTemplateQuery()+'contract='+PU+'&html='+escape(encodeURI(html.replace(/\+/,'%2b')))+'&format=html'+contractType+"&productCode="+PC+"&countryCode="+countryCode+"&regionCode="+regionCode+"&criteria="+criteria+(typeof(additionalPrintCSS)!="undefined"&&additionalPrintCSS?"&additionalPrintCSS="+escape(additionalPrintCSS):""),saveDocumentServiceLocation+"?download=false&filename="+_save_filename+prodTech,null,null,htmlCallback,true);}}
+else
+alert("Could not retrieve document.");}
+function saveAsHTMLCompleteEditor(req,ind,suc){if(suc&&typeof document.getElementById('ctl00$Content$reloadEditor')!=="undefined"){document.getElementById('ifMyDocuments').contentWindow.invalidateCache();setOldContent();parent.__doPostBack('ctl00$Content$reloadEditor',_save_filename);}
+else{alert('Error saving document: '+req.responseText);}}
+var newWinForDownloadIOS;function saveAsWord(filename,docID,download){if(_restrictTrialFeatures){openRestrictedFeaturesDialog('Word');return false;}
+if(!filename)
+trackEvent('Download as Microsoft Word');else
+trackEvent('Save as Microsoft Word');if(typeof getCookieValue=="function"&&(getCookieValue("UID")==null||getCookieValue("UID")==""))
+{showSignInDialog('signin',false,true,window.top.location.href,false,true);return;}
+_save_filename=filename;if(typeof(download)!='undefined')_download_save_doc=download;else _download_save_doc=!_save_filename;var extraQString="";if(getQueryStringValue("code")){extraQString+="&code="+getQueryStringValue("code");}
+if(getQueryStringValue("file")){extraQString+="&file="+getQueryStringValue("file");}
+if(docID){extraQString+="&docID="+docID;}
+if(!_save_filename&&(cssua.ua.ios||(cssua.ua.safari&&cssua.ua.mac_os_x)))
+newWinForDownloadIOS=window.open("","formvalueDoc");if(typeof(dcsVersion)!="undefined"){if(!_save_filename)
+showMessage('Please Wait');httpRequest("parent=yes&visited=true&SID="+SID+(!useDisplayHTML()?"&variablestring="+escape(tempstring):""),getHtmlDocLocation()+"?loc="+dbcountry+extraQString,getObject("content"),"Saving Document as Word ...",saveAsWordDone,true);}
+else{var contractType="";if(typeof productTechnology!="undefined"&&productTechnology.indexOf("DCS")!=-1)
+contractType="&type=aspnet";var html=replaceCopyright(getObject("outputPage").innerHTML);var countryCode=getCountry();var regionCode=getRegion();var criteria=getCriteria();if(html){if(_save_filename)
+httpRequest("contract="+PU+"&html="+escape(encodeURI(html.replace(/\+/,"%2b")))+"&format=doc&productCode="+PC+"&countryCode="+countryCode+"&regionCode="+regionCode+"&criteria="+criteria+(typeof(additionalPrintCSS)!="undefined"&&additionalPrintCSS?"&additionalPrintCSS="+escape(additionalPrintCSS):""),saveDocumentServiceLocation+"?download=false&filename="+_save_filename+contractType,null,null,displaySuccess,true);else
+postTo(saveDocumentServiceLocation+"?download=true"+contractType,{'outputTemplate':getOutputTemplate(),"contract":PU,"html":encodeURI(html),"format":"doc","productCode":PC,"countryCode":countryCode,"regionCode":regionCode,"criteria":criteria,"additionalPrintCSS":(typeof(additionalPrintCSS)!="undefined"?escape(additionalPrintCSS):"")});}
+else
+alert("Could not retrieve document.");}}
+function saveAsWordDone(req,ind,suc){hideMessage();if(ind&&ind.parentNode)ind.parentNode.removeChild(ind);if(suc){var html=outputOnly(req.responseText);if(html){if(!_download_save_doc)
+httpRequest('contract='+PU+'&html='+escape(encodeURI(html.replace(/\+/,'%2b')))+'&format=doc',saveDocumentServiceLocation+"?type=aspnet&download=false&filename="+_save_filename,null,null,displaySuccess,true);else if(cssua.ua.ios||(cssua.ua.safari&&cssua.ua.mac_os_x))
+{var url=saveDocumentServiceLocation+"?type=aspnet&download=true";var data={'contract':PU,'html':encodeURI(html),'format':'doc','filename':(_save_filename?_save_filename:null),'download':_download_save_doc};postToTarget(url,'formvalueDoc',data);}
+else
+postTo(saveDocumentServiceLocation+"?type=aspnet&download=true",{'outputTemplate':getOutputTemplate(),'contract':PU,'html':encodeURI(html),'format':'doc','filename':(_save_filename?_save_filename:null),'download':_download_save_doc});}
+else
+alert("Could not retrieve document.");}
+else
+alert("There was a problem saving your document ("+req.status+": "+req.statusText+")");}
+function saveAsRTF(filename){if(_restrictTrialFeatures){openRestrictedFeaturesDialog('RTF');return false;}
+if(!filename)
+trackEvent('Download as RTF');else
+trackEvent('Save as RTF');if(typeof getCookieValue=="function"&&(getCookieValue("UID")==null||getCookieValue("UID")==""))
+{showSignInDialog('signin',false,true,window.top.location.href,false,true);return;}
+if(cssua.ua.mobile&&cssua.ua.ios){alert("RTF is not supported on iOS. Please use a different device to download this document in RTF format.",{title:"Error"});return;}
+_save_filename=filename;var extraQString="";if(getQueryStringValue("code")){extraQString+="&code="+getQueryStringValue("code");}
+if(getQueryStringValue("file")){extraQString+="&file="+getQueryStringValue("file");}
+if(!_save_filename&&(cssua.ua.ios||(cssua.ua.safari&&cssua.ua.mac_os_x)))
+newWinForDownloadIOS=window.open("","formvalueRtf");if(typeof usingLDEditor=="undefined"||!usingLDEditor){if(!_save_filename)
+showMessage('Please Wait');httpRequest("parent=yes&visited=true&SID="+SID+(!useDisplayHTML()?"&variablestring="+escape(tempstring):""),getHtmlDocLocation()+"?loc="+dbcountry+extraQString,getObject("content"),"Saving Document as RTF ...",saveAsRTFDone,true);}
+else{var contractType="";if(typeof productTechnology!="undefined"&&productTechnology.indexOf("DCS")!=-1)
+contractType="&type=aspnet";var html=replaceCopyright(getObject("outputPage").innerHTML);var countryCode=getCountry();var regionCode=getRegion();var criteria=getCriteria();if(html){if(_save_filename)
+httpRequest("contract="+PU+"&html="+escape(encodeURI(html.replace(/\+/,"%2b")))+"&format=rtf&productCode="+PC+"&countryCode="+countryCode+"&regionCode="+regionCode+"&criteria="+criteria+(typeof(additionalPrintCSS)!="undefined"&&additionalPrintCSS?"&additionalPrintCSS="+escape(additionalPrintCSS):""),saveDocumentServiceLocation+"?download=false&filename="+_save_filename+contractType,null,null,displaySuccess,true);else
+postTo(saveDocumentServiceLocation+"?download=true"+contractType,{'outputTemplate':getOutputTemplate(),"contract":PU,"html":encodeURI(html),"format":"rtf","productCode":PC,"countryCode":countryCode,"regionCode":regionCode,"criteria":criteria,"additionalPrintCSS":(typeof(additionalPrintCSS)!="undefined"?escape(additionalPrintCSS):"")});}
+else
+alert("Could not retrieve document.");}}
+function saveAsRTFDone(req,ind,suc){hideMessage();if(ind&&ind.parentNode)ind.parentNode.removeChild(ind);if(suc){var html=outputOnly(req.responseText);if(html){if(_save_filename)
+httpRequest('contract='+PU+'&html='+escape(encodeURI(html.replace(/\+/,'%2b')))+'&format=rtf',saveDocumentServiceLocation+"?type=aspnet&download=false&filename="+_save_filename,null,null,displaySuccess,true);else if(cssua.ua.ios||(cssua.ua.safari&&cssua.ua.mac_os_x))
+{var url=saveDocumentServiceLocation+"?type=aspnet&download=true";var data={'contract':PU,'html':encodeURI(html),'format':'rtf'};postToTarget(url,'formvalueRtf',data);}
+else
+postTo(saveDocumentServiceLocation+"?type=aspnet&download=true",{'outputTemplate':getOutputTemplate(),'contract':PU,'html':encodeURI(html),'format':'rtf'});}
+else
+alert("Could not retrieve document.");}
+else
+alert("There was a problem saving your document ("+req.status+": "+req.statusText+")");}
+function changeAnswers(queryString){trackEvent('Change Answers');if(typeof(WebuserDataInfo)!="undefined")WebuserDataInfo.AddEvent("change_answers");window.location.href="./"+(typeof(queryString)!="undefined"?"?"+queryString:"");}
+function newAnswerDialog(code,type,criteria,version){if(typeof(code)=="undefined"){alert("No product defined for new document.");return;}
+if(typeof(type)=="undefined")type=0;if(typeof(criteria)=="undefined")criteria="";if(typeof(version)=="undefined")version="";saveAllFrames();trackEvent('New');showDialog("Create New Document","/newDialog.php?code="+code+"&type="+type+"&criteria="+criteria+"&version="+version,370,241,"plainDialog",0.7);}
+function saveAsPDF(filename)
+{if(!filename)
+trackEvent('Download as PDF');else
+trackEvent('Save as PDF');_save_filename=filename;var html=replaceCopyright(getObject('outputPage').innerHTML);if(html){if(typeof usingLDEditor!="undefined"&&usingLDEditor)
+{var contractType="";if(typeof productTechnology!="undefined"&&productTechnology.indexOf("DCS")!=-1)
+contractType="&type=aspnet";var countryCode=getCountry();var regionCode=getRegion();var criteria=getCriteria();if(_save_filename)
+httpRequest(getOutputTemplateQuery()+"contract="+PU+"&html="+escape(encodeURI(html.replace(/\+/,"%2b")))+"&format=pdf&productCode="+PC+"&countryCode="+countryCode+"&regionCode="+regionCode+"&criteria="+criteria+(typeof(additionalPrintCSS)!="undefined"&&additionalPrintCSS?"&additionalPrintCSS="+escape(additionalPrintCSS):""),saveDocumentServiceLocation+"?download=false&filename="+_save_filename+contractType,null,null,displaySuccess,true);}else{if(_save_filename)
+httpRequest('',"displaypdf.aspx?download=false&filename="+_save_filename,null,null,displaySuccess,true);else if(cssua.ua.ios)
+window.open("displaypdf.aspx?"+getExtraQString(),"_blank");else
+window.open("displaypdf.aspx?save=true"+getExtraQString());}}
+else
+alert("Could not retrieve document.");}
+function displaySuccess(req,ind,suc){hideMessage();if(!(suc&&req.responseText))
+alert("Error saving document: "+req.responseText);else
+alert("Document saved successfully.");if(saveDocument_Callback){saveDocument_Callback();saveDocument_Callback=null;}}
+function trimString(str){return str.replace(/^\s+/g,'').replace(/\s+$/g,'');}
+function toggleEdit(){return goToEditor();}
+function goToEditor(){if(_restrictTrialFeatures){openRestrictedFeaturesDialog('Editor');return false;}
+trackEvent('Editor');if(cssua.ua.mobile)
+alert("You must be on a desktop computer to use the Editor.",{title:"Error"});else{var criteria=getCriteria();postTo("/LawDepotEditor/index.aspx?code="+PC+((criteria)?"&ldcn="+criteria:""),{'outputTemplate':getOutputTemplate(),'editHTML':escape(getObject('outputPage').innerHTML.replace(String.fromCharCode(0xA9),"&copy;"))});}
+return false;}
+function printDoc(){trackEvent('Print');if(getCookie("doNotShowPrint")=="true"){showDialog('Printing Help','/common/printing/index.aspx',700,450,null,null,null,true);}else{printDocument();}}
+function hidePrintingPopWin(callReturnFunc){closeDialog();}
+function showSaveAnswersDialog(title,href,width,height,cssClass,overlayOpacity){var vstring=VS;showDialog(title,href,width,height,cssClass,overlayOpacity);postToTarget(href,'ifMyDocuments',{'variablestring':vstring});return false;}
+function goToChecklist(url){window.location.href="./"+(typeof(url)!="undefined"?url:"");}
+$(document).ready(function(){if($("form").hasClass("Preview2018")){var hasVisibleLi=false;$(".controls .menuitem-more ul li").each(function(){hasVisibleLi=$(this).css("display")!="none";if(hasVisibleLi)return false;});if(!hasVisibleLi){$(".controls .menuitem-more").remove();$(".controls li.endList:not(:last)").each(function(){$(this).removeClass("endList");});}
+else{$(".controls li.endList").each(function(){if(!$(this).hasClass("menuitem-more")){$(this).removeClass("endList");}});}}});var _restrictTrialFeatures=false;function openRestrictedFeaturesDialog(featureName){submitTrackedEvent('View Dialog',featureName,featureName,'Restricted Trial');var dialogTitle=''
+if(featureName=='Word'||featureName=='RTF'||featureName=='HTML'){dialogTitle='Download as '+featureName+' when you upgrade';}else if(featureName=='Editor'){dialogTitle='Use the Editor when you upgrade';}
+showDialog(dialogTitle,'/LimitFeaturesDialog.php?feature='+featureName,600,400,"plainDialog");}
+var upgradeInProgress=false;function postMonthlyUpgrade(featureName,url,contractId,originalProductCode){if(upgradeInProgress){return false;}
+else{upgradeInProgress=true;}
+submitTrackedEvent('Upgrade',featureName,featureName,'Restricted Trial');var f=document.createElement("FORM");f.method="POST";f.action=url;document.body.appendChild(f);var arguments={'upgradeSubscription':contractId,'products':"code="+originalProductCode+";license=subscription_year_renew,trial_subscription,subscription_monthly_upgrade;selected=subscription_monthly_upgrade:1mm:1mm:"};for(var n in arguments)
+cfi(f,n,arguments[n]);f.submit();return false;}
